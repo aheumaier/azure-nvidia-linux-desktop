@@ -20,6 +20,7 @@ steps:
     displayName: "Validate Scripts: Shellcheck"  
 
   - script: |
-      echo Now we can run our Makefile
+      cd "${Agent.BuildDirectory}"
+      echo "Now we can run our Makefile in $(pwd)"
       make all
     displayName: 'Run make all'

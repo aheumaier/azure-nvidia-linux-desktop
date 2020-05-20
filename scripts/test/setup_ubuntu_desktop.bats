@@ -73,7 +73,7 @@ function teardown() {
     source ${profile_script}
     run run_main
     assert_failure 
-    assert_output "Empty required env var found: var. ABORT"
+    assert_output "Empty required env var found: var var_name. ABORT"
 }
 @test "test run_main should be successfull" {
     source ${profile_script}

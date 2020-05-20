@@ -80,7 +80,7 @@ install_vtd() {
         -e "s%\${PATH+:\$PATH}%${ORIG_PATH+:$ORIG_PATH}%" \
         -e "s%\${LD_LIBRARY_PATH+:\$LD_LIBRARY_PATH}%${LD_LIBARY_PATH+:$LD_LIBRARY_PATH}%" \
         -e 's/"//g' \
-        -e '$CONAN_USER_HOME=/opt/conan' environment.sh.env | sudo tee /etc/environment
+        -e "\$CONAN_USER_HOME=/opt/conan" environment.sh.env | sudo tee /etc/environment
 }
 
 # === MAIN PROCEDURE ===
@@ -116,8 +116,9 @@ run_main() {
         # Conan needs pip
         python3-pip
     )
-    declare -r TMP_DIR
+    declare TMP_DIR
     TMP_DIR=$(mktemp -d -t tmp.XXXXXXXXXX || exit 1)
+    declare -r TMP_DIR
 
     install_system_packages
     install_nvidia_repos

@@ -3,7 +3,7 @@
 #  Perparing the linux system for  operating
 #  simulation VTD components
 #
-#   Usage: sudo ./setup_linux_refactor.sh
+#   Usage: sudo ./setup_ubuntu_desktop.sh
 #
 #
 # === Break on the first Error ===
@@ -13,15 +13,9 @@ if [ "${DEBUG}" ]; then
     set -o xtrace # Similar to -v, but expands commands, same as "set -x"
 fi
 
-# === Global vars we need for conan to run ===
-export CONAN_USER_HOME="/opt/conan"
-
-ORIG_PATH=$(cut -d '=' -f2 /etc/environment)
-export ORIG_PATH
-
 # === Cleanup actions ===
 function finish() {
-    # sudo /usr/sbin/waagent -force -deprovision+user && export HISTSIZE=0 && sync
+    sudo /usr/sbin/waagent -force -deprovision+user && export HISTSIZE=0 && sync
     rm -rf "$TMP_DIR"
 }
 # === Enforce clean-up on any circumstances ===
@@ -51,71 +45,58 @@ install_nvidia_drivers() {
     sudo apt install -y nvidia-driver-415
     # Installing CUDA drivers. Must be resolved in a separate step because cuda-drivers cannot properly resolve the dependency to the display drivers.
     sudo apt install -y cuda-drivers
+    sudo nvidia-xconfig  --virtual="1920x1080"  # We will need it later for x11vnc
 }
 
-# === Configure xrdp environment ===
-setup_xrdp() {
-    sudo sed -e 's/^new_cursors=true/new_cursors=false/g' -i /etc/xrdp/xrdp.ini
-    sudo systemctl enable xrdp
-}
+# === Configure x11vnc environment ===
+setup_x11vnc() {
+    sudo tee "/etc/systemd/system/x11vnc.service" >/dev/null <<'EOF'
+[Unit]
+Description=x11vnc VNC Server for X11
+Requires=display-manager.service
+After=display-manager.service
 
-# === Installing Conan ===
-setup_conan() {
-    sudo pip3 install conan
-    sudo mkdir "${CONAN_USER_HOME}"
-    sudo chmod -R a+w "${CONAN_USER_HOME}"
-    conan config install /tmp/conan_config # Packer creates /tmp/conan_config
-    conan config set storage.path="${CONAN_USER_HOME}"
-    conan user "${USER_DEVSTACK}" -r adapmt7c -p "${PASS_DEVSTACK}"
+[Service]
+Type=forking
+ExecStartPre=/bin/bash -c "/bin/systemctl set-environment SDDMXAUTH=$(/usr/bin/find /var/run/sddm/ -type f)"
+ExecStart=/usr/bin/x11vnc -display :0 -auth ${SDDMXAUTH} -forever -shared -bg -o /var/log/x11vnc.log -rfbauth /etc/x11vnc.passwd -xkb -norc -noxrecord -noxdamage -nomodtweak
+ExecStop=/usr/bin/killall x11vnc
+Restart=on-failure
+RestartSec=2
 
-}
+[Install]
+WantedBy=graphical.target
 
-# === Installing VTD Procudure ===
-install_vtd() {
-    setup_conan
-    conan install "${VERSION_TOOLCHAIN}" -g virtualenv -r adapmt7c
-    sed \
-        -e '/CONAN_OLD/d' \
-        -e '/ADS2LICENSE=/d' \
-        -e "s%\${PATH+:\$PATH}%${ORIG_PATH+:$ORIG_PATH}%" \
-        -e "s%\${LD_LIBRARY_PATH+:\$LD_LIBRARY_PATH}%${LD_LIBARY_PATH+:$LD_LIBRARY_PATH}%" \
-        -e 's/"//g' \
-        -e "\$CONAN_USER_HOME=/opt/conan" environment.sh.env | sudo tee /etc/environment
+EOF
+    sudo x11vnc -storepasswd "${VNC_PASS}" /etc/x11vnc.passwd
+    sudo systemctl enable x11vnc.service
 }
 
 # === MAIN PROCEDURE ===
 run_main() {
     declare -ra required_env_vars=(
-        "${USER_DEVSTACK}"
-        "${PASS_DEVSTACK}"
-        "${VERSION_TOOLCHAIN}"
-        "${LD_LIBRARY_PATH}"
-        "${NVIDIA_PKG}"
-        "${CUDA_PKG}"
-        "${NVIDIA_REPO}"
+        "${VNC_PASS}"
+        "${NVIDIA_PKG:-"nvidia-diag-driver-local-repo-ubuntu1804-415.25_1.0-1_amd64.deb"}"
+        "${CUDA_PKG:-"cuda-repo-ubuntu1804_10.0.130-1_amd64.deb"}"
+        "${NVIDIA_REPO-:"http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64"}"
     )
     for var in "${required_env_vars[@]}"; do
-        if [ -z "${var}" ]; then
+        if [ -z "${var}" ]; then    
             var_name=("${!var@}")
             echo "Empty required env var found: ${var_name[*]}. ABORT"
             exit 1
         fi
     done
 
-    local -r enable_nvidia=false
     declare -ar PACKAGES=(
-        wget curl
-        # Install GUI
-        kde-plasma-desktop xrdp
-        # VTD dependencies
-        xterm freeglut3 openssh-server nfs-common mesa-utils xfonts-75dpi libusb-0.1-4
-        libqtgui4 libqt4-dev libgsm1 libpulse0 libcrystalhd3 libmpg123-0 libdvdread4
+        wget curl kde-plasma-desktop x11vnc
+        xterm freeglut3 openssh-server  mesa-utils xfonts-75dpi libusb-0.1-4
+        libgsm1 libpulse0 libcrystalhd3 libmpg123-0 libdvdread4
         libxvidcore4 libaa1 libfaad2 libxss1 libopencore-amrnb0 libopencore-amrwb0
         libspeex1 libjack-jackd2-0 libdv4 libdca0 libtheora0 libxvmc1 libbs2b0 libmp3lame0
         libmad0 liblircclient0 libsmbclient libsdl1.2debian libtwolame0 libenca0
-        # Conan needs pip
-        python3-pip
     )
+    
     declare TMP_DIR
     TMP_DIR=$(mktemp -d -t tmp.XXXXXXXXXX || exit 1)
     declare -r TMP_DIR
@@ -123,12 +104,8 @@ run_main() {
     install_system_packages
     install_nvidia_repos
     install_cuda_repos
-
-    if [ $enable_nvidia ]; then
-        install_nvidia_drivers
-    fi
-    setup_xrdp
-    install_vtd
+    install_nvidia_drivers
+    setup_x11vnc
 }
 
 #  Be able to run this one either as standalone or import as lib

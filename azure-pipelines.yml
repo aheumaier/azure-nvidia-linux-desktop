@@ -21,6 +21,7 @@ steps:
 
   - script: |
       cd "${BUILD_SOURCESDIRECTORY}"
+      ls -l 
       echo "Now we can run our Makefile in $(pwd)"
       make all
     displayName: 'Run make all'

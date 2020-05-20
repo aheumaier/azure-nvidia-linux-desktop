@@ -14,5 +14,5 @@ all: bats
 
 # Recipe for converting a Markdown file into PDF using Pandoc
 bats:
-	bats $(bats)
+	./scripts/test/libs/bats/bin/bats $(bats)
 

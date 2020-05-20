@@ -24,4 +24,4 @@ steps:
       echo "Now we can run our Makefile in $(pwd)"
       ./scripts/test/libs/bats/bin/bats ./scripts/test/setup_ubuntu_desktop.bats
     displayName: 'Run make all'
-    workdir: $BUILD_SOURCESDIRECTORY
+    workingDirectory: $BUILD_SOURCESDIRECTORY

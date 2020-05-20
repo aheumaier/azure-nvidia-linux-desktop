@@ -15,7 +15,9 @@ fi
 
 # === Global vars we need for conan to run ===
 export CONAN_USER_HOME="/opt/conan"
-export ORIG_PATH=$(cut -d '=' -f2 /etc/environment)
+
+ORIG_PATH=$(cut -d '=' -f2 /etc/environment)
+export ORIG_PATH
 
 # === Cleanup actions ===
 function finish() {
@@ -27,12 +29,12 @@ function finish() {
 
 # === Installing Packages ===
 install_system_packages() {
-     sudo apt-get update && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y "${PACKAGES[@]}"
+    sudo apt-get update && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y "${PACKAGES[@]}"
 }
 
 # === Adding NVIDIA APT repositories ===
 install_nvidia_repos() {
-    wget -O "${TMP_DIR}/${NVIDIA_PKG}" http://us.download.nvidia.com/tesla/415.25/${NVIDIA_PKG}
+    wget -O "${TMP_DIR}/${NVIDIA_PKG}" http://us.download.nvidia.com/tesla/415.25/"${NVIDIA_PKG}"
     sudo dpkg -i "${TMP_DIR}/${NVIDIA_PKG}"
     sudo apt-key add /var/nvidia-diag-driver-local-repo-415.25/7fa2af80.pub
 }
@@ -94,8 +96,8 @@ run_main() {
     )
     for var in "${required_env_vars[@]}"; do
         if [ -z "${var}" ]; then
-            var_name=(${!var@})
-            echo "Empty required env var found: $var_name. ABORT"
+            var_name=("${!var@}")
+            echo "Empty required env var found: ${var_name[*]}. ABORT"
             exit 1
         fi
     done
@@ -114,8 +116,9 @@ run_main() {
         # Conan needs pip
         python3-pip
     )
-    declare -r TMP_DIR=$(mktemp -d -t tmp.XXXXXXXXXX || exit 1)
-  
+    declare -r TMP_DIR
+    TMP_DIR=$(mktemp -d -t tmp.XXXXXXXXXX || exit 1)
+
     install_system_packages
     install_nvidia_repos
     install_cuda_repos

@@ -19,7 +19,7 @@ steps:
       ./shellcheck ./scripts/*.sh
     displayName: "Validate Scripts: Shellcheck"  
 
-  - script: |
+  - bash: |
       cd "${BUILD_SOURCESDIRECTORY}"
       ls -l 
       echo "Now we can run our Makefile in $(pwd)"

@@ -10,6 +10,9 @@ pool:
   vmImage: 'ubuntu-18.04'
 
 steps:
+  - checkout: self
+    submodules: true
+    
   - bash: |
       echo "This checks for formatting and common bash errors. See wiki for error details and ignore options: https://github.com/koalaman/shellcheck/wiki/SC1000"
       export scversion="stable"
@@ -20,8 +23,7 @@ steps:
     displayName: "Validate Scripts: Shellcheck"  
 
   - bash: |
-      ls -l 
       echo "Now we can run our Makefile in $(pwd)"
-      ${BUILD_SOURCESDIRECTORY}/scripts/test/libs/bats/bin/bats ${BUILD_SOURCESDIRECTORY}/scripts/test/setup_ubuntu_desktop.bats
+      make all
     displayName: 'Run make all'
     # workingDirectory: $BUILD_SOURCESDIRECTORY

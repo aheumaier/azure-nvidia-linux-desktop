@@ -9,10 +9,15 @@ scripts := scripts
 # Directory containing bats source
 bats := $(wildcard $(scripts)/test/*.bats)
 
+all: test packer-build
 
-all: bats
+test: bats packer-validate
 
-# Recipe for converting a Markdown file into PDF using Pandoc
 bats:
 	scripts/test/libs/bats/bin/bats $(bats)
 
+packer-validate:
+	packer validate packer/linux-template.json
+
+install:
+	packer build packer/linux-template.json

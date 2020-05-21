@@ -1,0 +1,57 @@
+{
+    "variables": {
+        "client_id": "{{env `AZURE_CLIENT_ID`}}",
+        "client_secret": "{{env `AZURE_CLIENT_SECRET`}}",
+        "tenant_id": "{{env `AZURE_TENANT_ID`}}",
+        "subscription_id": "{{env `AZURE_SUBSCRIPTION_ID`}}",
+        "resource_group": "{{env `RESOURCE_GROUP`}}",
+        "passVnc": "{{env `VNC_PASS`}}",
+        "nvidiaRepo": "http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64",
+        "cudaPkg": "cuda-repo-ubuntu1804_10.0.130-1_amd64.deb",
+        "nvidiaPkg": "nvidia-diag-driver-local-repo-ubuntu1804-415.25_1.0-1_amd64.deb",
+        "version_ubuntu": "18.04-LTS"
+    },
+    "builders": [
+        {
+            "type": "azure-arm",
+            "client_id": "{{user `client_id`}}",
+            "client_secret": "{{user `client_secret`}}",
+            "tenant_id": "{{user `tenant_id`}}",
+            "subscription_id": "{{user `subscription_id`}}",
+            "managed_image_resource_group_name": "{{user `resource_group`}}",
+            "managed_image_name": "ubuntu18.04-desktop-nvidia-template-{{isotime \"20060102150405\"}}",
+            "build_resource_group_name": "{{user `resource_group`}}",
+            "os_type": "Linux",
+            "image_publisher": "Canonical",
+            "image_offer": "UbuntuServer",
+            "image_sku": "{{user `version_ubuntu`}}",
+            "azure_tags": {
+                "maintainer": "anheumai@microsoft.com",
+                "project": "desktop-nvidia-template",
+                "created_at": "{{isotime \"20060102150405\"}}"
+            },
+            "vm_size": "Standard_NV6",
+            "os_disk_size_gb": "64"
+        }
+    ],
+    "provisioners": [
+        {
+            "type": "shell",
+            "scripts": [
+                "scripts/setup_ubuntu_desktop.sh"
+            ],
+            "environment_vars": [
+                "VNC_PASS={{user `passVnc`}}",
+                "NVIDIA_PKG={{user `nvidiaPkg`}}",
+                "CUDA_PKG={{user `cudaPkg`}}",
+                "NVIDIA_REPO={{user `nvidiaRepo`}}"
+            ]
+        }
+    ],
+    "post-processors": [
+        {
+            "type": "manifest",
+            "strip_path": true
+        }
+    ]
+}

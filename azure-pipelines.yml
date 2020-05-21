@@ -12,7 +12,7 @@ pool:
 steps:
   - checkout: self
     submodules: true
-    
+
   - bash: |
       echo "This checks for formatting and common bash errors. See wiki for error details and ignore options: https://github.com/koalaman/shellcheck/wiki/SC1000"
       export scversion="stable"
@@ -26,4 +26,3 @@ steps:
       echo "Now we can run our Makefile in $(pwd)"
       make all
     displayName: 'Run make all'
-    # workingDirectory: $BUILD_SOURCESDIRECTORY

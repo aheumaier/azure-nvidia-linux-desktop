@@ -6,7 +6,7 @@ load 'test_helper'
 profile_script="./scripts/setup_ubuntu_desktop.sh"
 
 setup() {
-    DOCKER_SUT_ID=$(docker run -d ubuntu:18.04)
+    DOCKER_SUT_ID=$(docker run -id ubuntu:18.04)
 }
 
 function teardown() {

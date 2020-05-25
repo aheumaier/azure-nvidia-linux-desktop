@@ -37,7 +37,7 @@ install_nvidia_repos() {
 install_nvidia_drivers() {
     sudo apt-get update
     sudo apt-get -y install cuda
-    sudo nvidia-xconfig --virtual="1920x1080" # We will need it later for x11vnc
+    sudo nvidia-xconfig --use-display-device=none --virtual="3140x2160" # We will need it later for x11vnc
 }
 
 # === Configure x11vnc environment ===
@@ -60,25 +60,22 @@ RestartSec=2
 WantedBy=graphical.target
 
 EOF
-    sudo x11vnc -storepasswd "${VNC_PASS}" /etc/x11vnc.passwd
+    sudo x11vnc -storepasswd $(hostname) /etc/x11vnc.passwd
     sudo systemctl enable x11vnc.service
 }
 
 # === MAIN PROCEDURE ===
 run_main() {
-    declare -ra required_env_vars=(
-        "${VNC_PASS}"
-        "${NVIDIA_PKG}"
-        "${CUDA_PKG}"
-        "${NVIDIA_REPO}"
-    )
-    for var in "${required_env_vars[@]}"; do
-        if [ -z "${var}" ]; then
-            var_name=("${!var@}")
-            echo "Empty required env var found: ${var_name[*]}. ABORT"
-            exit 1
-        fi
-    done
+    # declare -ra required_env_vars=(      eequahThi1au
+    #     "${VNC_PASS}"
+    # )
+    # for var in "${required_env_vars[@]}"; do
+    #     if [ -z "${var}" ]; then
+    #         var_name=("${!var@}")
+    #         echo "Empty required env var found: ${var_name[*]}. ABORT"
+    #         exit 1
+    #     fi
+    # done
 
     declare -ar PACKAGES=(
         wget curl x11vnc

@@ -21,3 +21,15 @@ packer-validate:
 
 install:
 	packer build packer/linux-template.json
+
+terraform-init:
+	cd tf && terraform init
+
+terraform-validate:
+	cd tf && terraform validate 
+
+
+terraform: terraform-validate
+	cd tf && terraform apply
+
+deploy: terraform 	`

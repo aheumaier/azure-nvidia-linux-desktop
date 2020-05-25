@@ -45,11 +45,16 @@ The xorg.conf configuration example snippet shown above is what I use for the NV
 Running  `terraform apply ` will build a remote desktiop enabled Ubuntu Image in you resource group:
 ```Bash
 export RESOURCE_GROUP="rg-my-build-group"
-export VNC_PASS="Set-a-secure-password4\$to_^connect_%to_%the_%x11vnc"
 make install  
 ```
 
 You can connect now to the box with any VNC-Viewer using the hostname as session password
+OPen a terminal e.g `konsole` and validatew the results: 
+
+
+
+
+
 
 ### Setup the node with Packer
 Running  `make install` will build a remote desktio enabled Ubuntu Image in you resource group:

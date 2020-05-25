@@ -1,5 +1,4 @@
-# azure-nvidia-linux-desktop
-Run Nvidia-enabled Linux desktops in Azure
+# Run Nvidia-enabled Linux desktops in Azure
 
 ## Remote visualization
 Engineering simulation software uses powerful display graphics and the GPU for a quick rendering of the display. However, running engineering software and other graphics-heavy software in a Remote Desktop environment can be challenging for the principal reason that Azure's Nvidia Tesla enabled Linux machines does not use GPU direkt rendering by default Xserver configurations. Starting up the graphics-heavy software can generate errors as the software attempts to initialize DirectX or OpenGL GPU display drivers on the host computer.

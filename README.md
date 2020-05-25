@@ -1,16 +1,16 @@
 # Run Nvidia-enabled Linux desktops in Azure
-
-## Remote visualization
 Engineering simulation software uses powerful display graphics and the GPU for a quick rendering of the display. However, running engineering software and other graphics-heavy software in a Remote Desktop environment can be challenging for the principal reason that Azure's Nvidia Tesla enabled Linux machines does not use GPU direkt rendering by default Xserver configurations. Starting up the graphics-heavy software can generate errors as the software attempts to initialize DirectX or OpenGL GPU display drivers on the host computer.
 
 One of the most often over looked component is the display protocol, which is essential for delivering the performance your end users require and, ultimately, the success and user acceptance of your VDI initiative. After agonizing over CPUs and GPUs, IT professionals are often surprised to learn that their use case still requires them to purchase a high-performance display protocol from a third-party vendor, rather than simply using the display protocol included with their client OS.
 
 This issue can be easily corrected by modifying configurations on the host computer to allow the use of GPU rendering during a Remote Desktop session.
 
-## Configuring Tesla GPUs for Visualization
+## Remote visualization
+
 Although they lack video outputs, when properly configured, [Azure NV Instances](https://docs.microsoft.com/en-us/azure/virtual-machines/nv-series) eqipped with Tesla GPUs are fully capable of supporting the same graphics APIs and visualization capabilities as their GeForce and Quadro siblings. Below is a collection of the basic requirements to enable graphics on Tesla GPUs, and steps for accomplishing this in the most common cases. My examples below assume a conventional Linux-based x86 compute node, but they would likely be applicable to other node architectures as
 
 ### Enable the windowing system for full use of graphics APIs
+
 Once the GPU operation mode is properly set, the next requirement for full graphics operation is a running a windowing system. At present, the graphics software stack supporting OpenGL and related APIs depends on initialization and context creation facilities provided in cooperation with a running windowing system. A full windowing system is needed when supporting remote visualization software such as simulations, VNC, or Virtual GL.
 
 Currently, a windowing system is also required for large scale parallel HPC visualization workloads, even though off-screen rendering (e.g. OpenGL FBOs or GLX Pbuffer rendering) is typically used exclusively.
@@ -59,4 +59,8 @@ export VNC_PASS="Set-a-secure-password4\$to_^connect_%to_%the_%x11vnc"
 make install  
 ```
 
+## References
 
+- [HPC Visualization on NVIDIA Tesla GPUs](https://devblogs.nvidia.com/hpc-visualization-nvidia-tesla-gpus/)
+- [Using CUDA and X](https://nvidia.custhelp.com/app/answers/detail/a_id/3029/~/using-cuda-and-x)
+- [NVIDIA Container Toolkit](https://github.com/NVIDIA/nvidia-docker) 
